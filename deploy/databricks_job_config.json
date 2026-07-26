@@ -1,6 +1,6 @@
 {
   "name": "Zomato Analytics — Full Medallion Pipeline",
-  "description": "End-to-end pipeline: DDL → Data Gen → Bronze → Silver → Gold → Dashboard",
+  "description": "End-to-end pipeline: DDL → Data Gen → Bronze → Silver → Gold → Dashboard → Validation",
   "tags": {
     "project": "zomato-analytics",
     "team": "data-engineering",
@@ -11,7 +11,7 @@
       "task_key": "create_tables",
       "description": "Create Unity Catalog, schemas, volumes, and all Delta tables (idempotent DDL)",
       "notebook_task": {
-        "notebook_path": "/Workspace/Zomato-Analytics/setup/00_create_tables",
+        "notebook_path": "/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/setup/00_create_tables",
         "base_parameters": {
           "catalog_name": "zomato_analytics"
         }
@@ -26,7 +26,7 @@
         { "task_key": "create_tables" }
       ],
       "notebook_task": {
-        "notebook_path": "/Workspace/Zomato-Analytics/setup/01_generate_data",
+        "notebook_path": "/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/setup/01_generate_data",
         "base_parameters": {
           "catalog_name": "zomato_analytics"
         }
@@ -41,7 +41,7 @@
         { "task_key": "generate_data" }
       ],
       "notebook_task": {
-        "notebook_path": "/Workspace/Zomato-Analytics/bronze/01_bronze_ingestion",
+        "notebook_path": "/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/bronze/01_bronze_ingestion",
         "base_parameters": {
           "catalog_name": "zomato_analytics",
           "env": "dev",
@@ -60,7 +60,7 @@
         { "task_key": "bronze_ingestion" }
       ],
       "notebook_task": {
-        "notebook_path": "/Workspace/Zomato-Analytics/silver/02_silver_transformation",
+        "notebook_path": "/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/silver/02_silver_transformation",
         "base_parameters": {
           "catalog_name": "zomato_analytics",
           "env": "dev"
@@ -76,7 +76,7 @@
         { "task_key": "silver_transformation" }
       ],
       "notebook_task": {
-        "notebook_path": "/Workspace/Zomato-Analytics/gold/03_gold_aggregation",
+        "notebook_path": "/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/gold/03_gold_aggregation",
         "base_parameters": {
           "catalog_name": "zomato_analytics",
           "env": "dev"
@@ -92,13 +92,29 @@
         { "task_key": "gold_aggregation" }
       ],
       "notebook_task": {
-        "notebook_path": "/Workspace/Zomato-Analytics/dashboard/04_analytics_dashboard",
+        "notebook_path": "/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/dashboard/04_analytics_dashboard",
         "base_parameters": {
           "catalog_name": "zomato_analytics"
         }
       },
       "timeout_seconds": 1800,
       "max_retries": 1
+    },
+    {
+      "task_key": "pipeline_validation",
+      "description": "Validate record counts across Bronze → Silver → Gold layers and write audit log entry. Fails the workflow if any layer drops records beyond tolerance.",
+      "depends_on": [
+        { "task_key": "dashboard_refresh" }
+      ],
+      "notebook_task": {
+        "notebook_path": "/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/validation/06_pipeline_validation",
+        "base_parameters": {
+          "catalog_name": "zomato_analytics",
+          "env": "dev"
+        }
+      },
+      "timeout_seconds": 900,
+      "max_retries": 0
     }
   ],
   "schedule": {
