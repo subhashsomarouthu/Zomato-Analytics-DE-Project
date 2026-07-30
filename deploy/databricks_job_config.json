@@ -1,6 +1,6 @@
 {
   "name": "Zomato Analytics — Full Medallion Pipeline",
-  "description": "End-to-end pipeline: DDL → Data Gen → Bronze → Silver → Gold → Dashboard → Validation",
+  "description": "End-to-end pipeline: DDL → Data Gen → Bronze → Silver → Gold → Dashboard",
   "tags": {
     "project": "zomato-analytics",
     "team": "data-engineering",
@@ -11,7 +11,7 @@
       "task_key": "create_tables",
       "description": "Create Unity Catalog, schemas, volumes, and all Delta tables (idempotent DDL)",
       "notebook_task": {
-        "notebook_path": "/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/setup/00_create_tables",
+        "notebook_path": "/Workspace/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/setup/00_create_tables",
         "base_parameters": {
           "catalog_name": "zomato_analytics"
         }
@@ -26,7 +26,7 @@
         { "task_key": "create_tables" }
       ],
       "notebook_task": {
-        "notebook_path": "/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/setup/01_generate_data",
+        "notebook_path": "/Workspace/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/setup/01_generate_data",
         "base_parameters": {
           "catalog_name": "zomato_analytics"
         }
@@ -41,7 +41,7 @@
         { "task_key": "generate_data" }
       ],
       "notebook_task": {
-        "notebook_path": "/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/bronze/01_bronze_ingestion",
+        "notebook_path": "/Workspace/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/bronze/01_bronze_ingestion",
         "base_parameters": {
           "catalog_name": "zomato_analytics",
           "env": "dev",
@@ -54,13 +54,30 @@
       "min_retry_interval_millis": 60000
     },
     {
-      "task_key": "silver_transformation",
-      "description": "Cleanse, deduplicate, and transform Bronze data into Silver layer",
+      "task_key": "dq_checks",
+      "description": "Run rule-based data quality checks on Bronze tables — split records into validated and quarantine Delta tables; block pipeline if pass rate < 90%",
       "depends_on": [
         { "task_key": "bronze_ingestion" }
       ],
       "notebook_task": {
-        "notebook_path": "/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/silver/02_silver_transformation",
+        "notebook_path": "/Workspace/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/quality/07_dq_checks",
+        "base_parameters": {
+          "catalog_name": "zomato_analytics",
+          "env": "dev",
+          "pass_rate_threshold": "90.0"
+        }
+      },
+      "timeout_seconds": 1800,
+      "max_retries": 0
+    },
+    {
+      "task_key": "silver_transformation",
+      "description": "Cleanse, deduplicate, and transform Bronze data into Silver layer",
+      "depends_on": [
+        { "task_key": "dq_checks" }
+      ],
+      "notebook_task": {
+        "notebook_path": "/Workspace/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/silver/02_silver_transformation",
         "base_parameters": {
           "catalog_name": "zomato_analytics",
           "env": "dev"
@@ -76,7 +93,7 @@
         { "task_key": "silver_transformation" }
       ],
       "notebook_task": {
-        "notebook_path": "/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/gold/03_gold_aggregation",
+        "notebook_path": "/Workspace/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/gold/03_gold_aggregation",
         "base_parameters": {
           "catalog_name": "zomato_analytics",
           "env": "dev"
@@ -92,29 +109,13 @@
         { "task_key": "gold_aggregation" }
       ],
       "notebook_task": {
-        "notebook_path": "/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/dashboard/04_analytics_dashboard",
+        "notebook_path": "/Workspace/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/dashboard/04_analytics_dashboard",
         "base_parameters": {
           "catalog_name": "zomato_analytics"
         }
       },
       "timeout_seconds": 1800,
       "max_retries": 1
-    },
-    {
-      "task_key": "pipeline_validation",
-      "description": "Validate record counts across Bronze → Silver → Gold layers and write audit log entry. Fails the workflow if any layer drops records beyond tolerance.",
-      "depends_on": [
-        { "task_key": "dashboard_refresh" }
-      ],
-      "notebook_task": {
-        "notebook_path": "/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks/validation/06_pipeline_validation",
-        "base_parameters": {
-          "catalog_name": "zomato_analytics",
-          "env": "dev"
-        }
-      },
-      "timeout_seconds": 900,
-      "max_retries": 0
     }
   ],
   "schedule": {

@@ -7,7 +7,7 @@ Usage:
     python scripts/deploy_notebooks.py \
         --host https://your-workspace.cloud.databricks.com \
         --token dapi... \
-        --workspace-path /Workspace/Zomato-Analytics
+        --workspace-path /Workspace/Users/17b91a12f6@srkrec.ac.in/Zomato-Analytics-DE-Project/notebooks
 """
 
 import argparse
@@ -26,6 +26,8 @@ NOTEBOOKS = [
     ("notebooks/gold/03_gold_aggregation.ipynb", "gold/03_gold_aggregation"),
     ("notebooks/dashboard/04_analytics_dashboard.ipynb", "dashboard/04_analytics_dashboard"),
     ("notebooks/orchestration/05_run_pipeline.ipynb", "orchestration/05_run_pipeline"),
+    ("notebooks/validation/06_pipeline_validation.ipynb", "validation/06_pipeline_validation"),
+    ("notebooks/quality/07_dq_checks.ipynb", "quality/07_dq_checks"),
 ]
 
 
